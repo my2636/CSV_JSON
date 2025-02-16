@@ -1,10 +1,15 @@
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import com.opencsv.CSVReader;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
 
-import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.List;
 
 /**Метод parseCSV() вам необходимо реализовать самостоятельно. В этом вам поможет экземпляр класса CSVReader.
@@ -16,10 +21,10 @@ import java.util.List;
 
 Полученный список преобразуйте в строчку в формате JSON. Сделайте это с помощью метода listToJson(), который вам так же
 предстоит реализовать самостоятельно.
-
 String json = listToJson(list);
+
 При написании метода listToJson() вам понадобятся объекты типа GsonBuilder и Gson. Для преобразования списка объектов
-в JSON, требуется определить тип этого спика:
+в JSON, требуется определить тип этого спиcка:
 
 Type listType = new TypeToken<List<T>>() {}.getType();
 Получить JSON из экземпляра класса Gson можно с помощью метода toJson(), передав в качестве аргументов список сотрудников и тип списка:
@@ -29,10 +34,15 @@ String json = gson.toJson(list, listType);
 В этом вам поможет FileWriter и его метод write().*/
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         String[] columnMapping = {"id", "firstName", "lastName", "country", "age"};
         String fileName = "data.csv";
+
         List<Employee> list = parseCSV(columnMapping, fileName);
+        String jsonString = listToJson(list);
+        System.out.println(jsonString);
+        writeString(jsonString);
+
     }
 
     static List<Employee> parseCSV(String[] columnMapping, String filename) {
@@ -40,10 +50,29 @@ public class Main {
             ColumnPositionMappingStrategy strategy = new ColumnPositionMappingStrategy();
             strategy.setType(Employee.class);
             strategy.setColumnMapping(columnMapping);
-            CsvToBean<Employee> csvToBean = new CsvToBeanBuilder<>()
+            CsvToBean<Employee> csvToBean = new CsvToBeanBuilder<Employee>(csvReader)
+                    .withMappingStrategy(strategy)
+                    .build();
+            return csvToBean.parse();
 
         } catch (Exception e) {
+            throw new RuntimeException("Произошла ошибка при парсинге CSV: " + e.getMessage());
+        }
+    }
 
+    static String listToJson(List<Employee> list) {
+        GsonBuilder builder = new GsonBuilder();
+        Gson gson = builder.create();
+
+        Type listType = new TypeToken<List<Employee>>() {}.getType();
+        return gson.toJson(list, listType);
+    }
+
+    static void writeString(String jsonString) throws IOException {
+        try (FileWriter writer = new FileWriter("EmployeeJSONFile.json")) {
+            writer.write(jsonString);
+        } catch (Exception e) {
+            throw new IOException("Не удалось сохранить файл: " + e.getMessage());
         }
     }
 }
