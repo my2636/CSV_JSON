@@ -134,24 +134,26 @@ public class Main {
     private static List<Employee> getEmployees(Node node) {
         NodeList nodeList = node.getChildNodes();
         List<Employee> employeeList = new ArrayList<>(nodeList.getLength());
+
         for (int i = 0; i < nodeList.getLength(); i++) {
             Node node_ = nodeList.item(i);
-
             if (Node.ELEMENT_NODE == node_.getNodeType()) {
                 Element element = (Element) node_;
                 NodeList list2 = element.getChildNodes();
                 String[] elementContent = new String[list2.getLength()];
+
                 for (int j = 0; j < list2.getLength(); j++) {
                     String content = list2.item(j).getTextContent();
                     elementContent[j] = content;
                 }
+
                 Employee employee = new Employee(Long.parseLong(elementContent[1]), elementContent[3], elementContent[5],
                         elementContent[7], Integer.parseInt(elementContent[9]));
                 employeeList.add(employee);
             }
         }
+
         return employeeList;
     }
-
-
 }
+// if (Node.ELEMENT_NODE == node.getNodeType() && node.getNodeName().equals("employee")
